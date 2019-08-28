@@ -1,4 +1,4 @@
-import os
+import os, pdb
 
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
@@ -113,7 +113,16 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    # IMPLEMENT THIS
+    # IMPLEMENT THIS - todo
+
+    user_id = session[CURR_USER_KEY]  # take the id from the session key
+    user = User.query.get(user_id) # get the instance of the user from the database
+
+    do_logout()
+
+    flash(f"{user.username} has logged out!", "success")
+
+    return redirect("/login")
 
 
 ##############################################################################
