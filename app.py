@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
 from models import db, connect_db, User, Message
 
 CURR_USER_KEY = "curr_user"
@@ -113,14 +113,12 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    # IMPLEMENT THIS - todo
-
-    user_id = session[CURR_USER_KEY]  # take the id from the session key
-    user = User.query.get(user_id) # get the instance of the user from the database
+    if not g.user:
+        return redirect("/login")
 
     do_logout()
 
-    flash(f"{user.username} has logged out!", "success")
+    flash(f"{g.user.username} has logged out!", "success")
 
     return redirect("/login")
 
@@ -220,7 +218,30 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
-    # IMPLEMENT THIS
+    form = UserEditForm(obj=g.user)
+
+    if form.validate_on_submit():
+        user = User.authenticate(g.user.username, form.password.data)
+
+        if user:
+            user.username = form.username.data
+            user.email = form.email.data
+            user.image_url = form.image_url.data
+            user.header_image_url = form.header_image_url.data
+            user.bio = form.bio.data
+
+            db.session.add(user)
+            db.session.commit()
+
+            flash(f"User {g.user.id} updated!", "success")
+            return redirect(f"/users/{g.user.id}")
+
+        else:
+            form.password.errors = ["Invalid password"]
+            return render_template("users/edit.html", form=form)
+
+    else:
+        return render_template("users/edit.html", form=form)
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -248,6 +269,7 @@ def messages_add():
 
     Show form if GET. If valid, update message and redirect to user page.
     """
+
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -301,11 +323,15 @@ def homepage():
     """
 
     if g.user:
+
+        # followers = User.query.all()
+        follower_ids = [u.id for u in g.user.followers] + [g.user.id]
+
         messages = (Message
                     .query
-                    .order_by(Message.timestamp.desc())
-                    .limit(100)
-                    .all())
+                    .order_by(Message.timestamp.desc())  # or ascending ???
+                    .filter(Message.user_id.in_(follower_ids))  # Does this work?
+                    .limit(100))
 
         return render_template('home.html', messages=messages)
 
