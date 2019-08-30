@@ -49,6 +49,13 @@
             <div class="message-area">
               <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
               <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
+              <form class="star float-right" method="POST" action="/likes">
+                {% if message in msg.user.likes %}
+                    <i class="fas fa-star" onclick="submit"></i> <!-- solid fill -->
+                {% else %}
+                    <i class="far fa-star" onclick="submit"></i> <!-- empty star -->
+                {% endif %}
+              </form>
               <p>{{ msg.text }}</p>
             </div>
           </li>

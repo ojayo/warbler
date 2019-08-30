@@ -21,8 +21,8 @@
                       <p>@{{ user.username }}</p>
                     </a>
 
-                    {% if g.user %}
-                      {% if g.user.is_following(user) %}
+                    {% if g.user %} <!-- if the user is logged in: -->
+                      {% if g.user.is_following(user) %} <!-- if the global user is following a user in the users table : -->
                         <form method="POST"
                               action="/users/stop-following/{{ user.id }}">
                           <button class="btn btn-primary btn-sm">Unfollow</button>

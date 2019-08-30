@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Follows, Like
 
 CURR_USER_KEY = "curr_user"
 
@@ -149,6 +149,8 @@ def users_show(user_id):
 
     user = User.query.get_or_404(user_id)
 
+    num_of_likes = len(user.liked_messages)
+
     # snagging messages in order from the database;
     # user.messages won't be in order by default
     messages = (Message
@@ -157,7 +159,10 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, messages=messages)
+    return render_template('users/show.html', 
+                           user=user,
+                           messages=messages,
+                           num_of_likes=num_of_likes)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -213,6 +218,20 @@ def stop_following(follow_id):
 
     return redirect(f"/users/{g.user.id}/following")
 
+# ??????????????????????????????????????????????????????????????????????
+
+# @app.route('/users/<int:user_id>/likes')
+# def show_likes(user_id):
+#     """Show list of all messages this user has liked."""
+
+#     if not g.user:
+#         flash("Access unauthorized.", "danger")
+#         return redirect("/")
+
+#     user = User.query.get_or_404(user_id)
+#     return render_template('users/following.html', user=user)
+
+# ??????????????????????????????????????????????????????????????????????
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
@@ -270,7 +289,6 @@ def messages_add():
     Show form if GET. If valid, update message and redirect to user page.
     """
 
-
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -309,6 +327,41 @@ def messages_destroy(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
+
+# ?????????????????????????????????????????????????????????????????????????????????????
+# Likes routes:
+
+
+@app.route('/likes/<int:message_id>', methods=["POST"])
+def add_like(message_id):
+    """ Add a liked message """
+
+    # first check if the user is the one doing the liking ?
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    # when somebody clicks on an empty star, add it to the likes
+
+    #     form = MessageForm()
+
+    # if form.validate_on_submit():
+    #     msg = Message(text=form.text.data)
+    #     g.user.messages.append(msg)
+    #     db.session.commit()
+
+    newlike = Like(message_being_liked_id=message_id, user_doing_liking_id=g.user.id)
+    g.user.likes.append(newlike)
+    # db.session.add(newlike)
+    db.session.commit()
+
+    # what is it being added to? the likes table?
+
+    return redirect(request.referrer)  # redirect back to page you're on
+
+
+
+# ?????????????????????????????????????????????????????????????????????????????????????
 
 ##############################################################################
 # Homepage and error pages

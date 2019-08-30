@@ -27,10 +27,14 @@
               <a href="/users/{{ user.id }}/followers">{{ user.followers | length }}</a>
             </h4>
           </li>
+
           <li class="stat">
             <p class="small">Likes</p>
-            <h4>TBD</h4>
+            <h4>
+              <a href="/users/{{ user.id }}/likes">{{ num_of_likes }}</a>
+            </h4>
           </li>
+
           <div class="ml-auto">
             {% if g.user.id == user.id %}
             <a href="/users/profile" class="btn btn-outline-secondary">Edit Profile</a>
@@ -53,9 +57,9 @@
       </div>
     </div>
   </div>
-</div>
+</div> <!-- end warbler hero banner -->
 
-<div class="row">
+<div class="row"> <!-- side bar showing user details -->
   <div class="col-sm-3">
     <h4 id="sidebar-username">@{{ user.username }}</h4>
     <p> {{ user.bio }}</p>

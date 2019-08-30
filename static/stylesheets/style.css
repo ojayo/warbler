@@ -154,6 +154,14 @@ nav + .container {
 
 /* ===================== User profile */
 
+.star {
+    color: #ffd700;
+}
+
+/* .star i:hover {
+    color: red;
+} */
+
 .join-message {
   margin-top: 100px;
 }
